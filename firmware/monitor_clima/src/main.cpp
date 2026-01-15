@@ -15,7 +15,7 @@ const char* password = "cYn452Ep";
 
 // 3. IP de tu computadora (mira ipconfig)
 // Manten el puerto :5000 y la ruta /api/data
-const char* serverUrl = "http://192.168.18.160:5000/api/data";
+const char* serverUrl = "https://proyecto-iot-python.onrender.com/api/data";
 
 // 4. Configuración del Sensor (Para cuando lo tengas)
 #define DHTPIN 4     // Pin GPIO 4
