@@ -109,5 +109,18 @@ def descargar_todo():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# --- API: BORRÓN Y CUENTA NUEVA ---
+@app.route('/api/admin/reset', methods=['GET'])
+def borrar_db():
+    try:
+        with sqlite3.connect(DB_NAME) as conn:
+            cursor = conn.cursor()
+            # Borra todos los datos pero deja la tabla lista para recibir nuevos
+            cursor.execute('DELETE FROM mediciones')
+            conn.commit()
+        return "<h1>✅ Base de datos vaciada correctamente.</h1><p>Todo limpio para empezar de cero.</p>", 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
