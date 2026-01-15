@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 Eco-Mind Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f4f9; text-align: center; }
+        .container { width: 90%; max-width: 800px; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .status { font-size: 1.2rem; color: #666; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>🌱 Monitor de Clima IoT</h1>
+        <p class="status" id="ultimo-dato">Esperando datos...</p>
+        
+        <canvas id="miGrafica"></canvas>
+    </div>
+
+    <script>
+        let chart; // Variable global para la gráfica
+
+        async function actualizarGrafica() {
+            try {
+                // 1. Pedir datos a Python
+                const respuesta = await fetch('/api/historial');
+                const datos = await respuesta.json();
+
+                // 2. Preparar listas para X (tiempo) e Y (temperatura)
+                const etiquetas = datos.map(d => d.hora); // Solo la hora
+                const temperaturas = datos.map(d => d.temp);
+
+                // Actualizar texto del último dato
+                const ultimo = datos[datos.length - 1];
+                document.getElementById('ultimo-dato').innerText = 
+                    `🌡️ Última lectura: ${ultimo.temp}°C | Humedad: ${ultimo.hum}%`;
+
+                // 3. Dibujar o Actualizar Gráfica
+                const ctx = document.getElementById('miGrafica').getContext('2d');
+                
+                if (chart) {
+                    // Si ya existe, actualizamos datos
+                    chart.data.labels = etiquetas;
+                    chart.data.datasets[0].data = temperaturas;
+                    chart.update();
+                } else {
+                    // Si no existe, la creamos
+                    chart = new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: etiquetas,
+                            datasets: [{
+                                label: 'Temperatura (°C)',
+                                data: temperaturas,
+                                borderColor: 'rgb(255, 99, 132)',
+                                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                                tension: 0.4, // Curvatura suave
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            animation: false, // Desactivar animación para que no sea molesto al refrescar
+                            scales: { y: { beginAtZero: false } }
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error("Error cargando datos:", error);
+            }
+        }
+
+        // Actualizar cada 5 segundos automáticamente
+        setInterval(actualizarGrafica, 5000);
+        actualizarGrafica(); // Primera carga inmediata
+    </script>
+</body>
+</html>
