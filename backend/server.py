@@ -50,7 +50,16 @@ def recibir_datos():
         # -------------------------------------------
 
         with sqlite3.connect(DB_NAME) as conn:
-            # ... (el resto sigue igual)
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO mediciones (fecha, temperatura, humedad, modo)
+                VALUES (?, ?, ?, ?)
+            ''', (fecha, temp, hum, modo))
+            conn.commit()
+        
+        return jsonify({'success': 'Datos guardados'}), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # --- API: ENVIAR DATOS AL DASHBOARD ---
 @app.route('/api/historial', methods=['GET'])
