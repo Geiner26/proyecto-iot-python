@@ -1,7 +1,9 @@
 import sqlite3
 from flask import Flask, request, jsonify, render_template
 from datetime import datetime
+import pytz
 import os
+
 
 app = Flask(__name__)
 DB_NAME = 'estacion_clima.db'
@@ -40,22 +42,15 @@ def recibir_datos():
         temp = payload.get('temp')
         hum = payload.get('hum')
         modo = payload.get('modo')
-        fecha = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        
+        # --- CAMBIO IMPORTANTE: FORZAR HORA PERÚ ---
+        zona_horaria = pytz.timezone('America/Lima')
+        fecha_peru = datetime.now(zona_horaria)
+        fecha = fecha_peru.strftime("%Y-%m-%d %H:%M:%S")
+        # -------------------------------------------
 
-        # INSERTAR EN SQLITE
         with sqlite3.connect(DB_NAME) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                'INSERT INTO mediciones (fecha, temperatura, humedad, modo) VALUES (?, ?, ?, ?)',
-                (fecha, temp, hum, modo)
-            )
-            conn.commit()
-
-        print(f"💾 SQL GUARDADO: T:{temp} H:{hum}")
-        return jsonify({'status': 'ok'}), 200
-    except Exception as e:
-        print(e)
-        return jsonify({'error': str(e)}), 500
+            # ... (el resto sigue igual)
 
 # --- API: ENVIAR DATOS AL DASHBOARD ---
 @app.route('/api/historial', methods=['GET'])
