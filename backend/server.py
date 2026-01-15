@@ -83,5 +83,27 @@ def obtener_historial():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+# --- API: EXPORTAR TODO PARA LA IA ---
+@app.route('/api/all', methods=['GET'])
+def descargar_todo():
+    try:
+        with sqlite3.connect(DB_NAME) as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            # Sin limite, traemos toda la historia
+            cursor.execute('SELECT * FROM mediciones ORDER BY id ASC') 
+            filas = cursor.fetchall()
+
+        datos = []
+        for fila in filas:
+            datos.append({
+                'fecha': fila['fecha'], # Formato completo YYYY-MM-DD HH:MM:SS
+                'temp': fila['temperatura'],
+                'hum': fila['humedad']
+            })
+        return jsonify(datos), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
